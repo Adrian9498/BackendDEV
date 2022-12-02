@@ -1,4 +1,5 @@
 const {Pool} = require('pg');
+const mysql = require('mysql');
 
 const pool = new Pool({
     host: 'localhost',
@@ -8,9 +9,27 @@ const pool = new Pool({
     database: 'zoologicos',
 });
 
-const holaDev = (req,res) =>{
-    console.log("Hola DEV");
-    res.json("Hola MUNDO 5");
+const con = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    port: 3306,
+    database: 'proveedores_walmart'
+});
+
+con.connect(function(err) {
+    if (err) throw err;
+    console.log("Connected!");
+});
+
+const holaDev = async (req,res) =>{
+    
+    let response = await con.query('SELECT * FROM entidad WHERE entidad = ?',['AGUASCALIENTES'],(err,result)  =>{
+        console.log(result[0].entidad);
+        res.status(200).json(result[0]);
+    });
+   
+
 } 
 
 const getAnimales = async (req,res) =>{
@@ -135,8 +154,10 @@ const sinDatos = (consulta,res) =>{
 
 const addZoo = async (req,res) =>{
     try{
-
-        let expresion = new RegExp("\D");
+         // Solo letras ^[a-zA-Z]+$
+         // Solo numeros ^[0-9]*$
+         // Solo numeros con punto decimal ^[0-9]+[.]+[0-9]*$
+        let expresion = new RegExp("\D");    
 
         const {nombre,ciudad,pais,tamanio,presupuesto_anual} = req.body;
 
